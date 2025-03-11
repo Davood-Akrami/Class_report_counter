@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>محاسبه حقوق مربیان</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+
+        .container {
+            background-color: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .upload-section {
+            border: 2px dashed #3498db;
+            padding: 20px;
+            text-align: center;
+            margin-bottom: 30px;
+            border-radius: 5px;
+        }
+
+        #fileInput {
+            display: none;
+        }
+
+        .custom-file-upload {
+            background-color: #3498db;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            display: inline-block;
+        }
+
+        .custom-file-upload:hover {
+            background-color: #2980b9;
+        }
+
+        #result {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #ecf0f1;
+            border-radius: 5px;
+            display: none;
+        }
+
+        .session-item {
+            margin: 10px 0;
+            padding: 10px;
+            background-color: #fff;
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>سیستم محاسبه جلسات آموزشی</h1>
+        
+        <div class="upload-section">
+            <label for="fileInput" class="custom-file-upload">
+                انتخاب فایل CSV
+            </label>
+            <input type="file" id="fileInput" accept=".csv" />
+            <p>فایل CSV خود را اینجا آپلود کنید</p>
+        </div>
+
+        <div id="result"></div>
+    </div>
+
+    <script>
+        document.getElementById('fileInput').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    processCSV(e.target.result);
+                };
+                reader.readAsText(file);
+            }
+        });
+
+        function processCSV(csvData) {
+            const rows = csvData.split('\n').slice(1); // حذف هدر
+            const classes = {};
+
+            rows.forEach(row => {
+                if (row.trim() === '') return;
+                
+                const cols = row.split(',');
+                if (cols.length < 13) return;
+
+                const topic = cols[0].trim();
+                const duration = parseInt(cols[10]);
+                const participants = parseInt(cols[12]);
+
+                if (duration > 50 && participants > 4) {
+                    classes[topic] = (classes[topic] || 0) + 1;
+                }
+            });
+
+            displayResults(classes);
+        }
+
+        function displayResults(classes) {
+            const resultDiv = document.getElementById('result');
+            resultDiv.style.display = 'block';
+            resultDiv.innerHTML = '<h3>نتایج محاسبات:</h3>';
+
+            if (Object.keys(classes).length === 0) {
+                resultDiv.innerHTML += '<p>هیچ کلاس واجد شرایطی یافت نشد</p>';
+                return;
+            }
+
+            for (const [topic, count] of Object.entries(classes)) {
+                const div = document.createElement('div');
+                div.className = 'session-item';
+                div.innerHTML = `${topic}: ${count} session`;
+                resultDiv.appendChild(div);
+            }
+        }
+    </script>
+</body>
+</html>
